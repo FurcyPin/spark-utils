@@ -11,12 +11,12 @@ package object analysis {
 
     implicit class DataSetExtension[T](ds: Dataset[T]) {
 
-      def analyze(): DataFrame = {
-        Analyzer.analyze(ds)
+      def analyze(explode: Boolean = true): DataFrame = {
+        DatasetAnalyzer.analyze(ds, explode)
       }
 
-      def denormalize(): Dataset[Row] = {
-        Denormalizer.denormalize(ds)
+      def expand(): Dataset[Row] = {
+        DataframeExpander.expandDataset(ds)
       }
 
     }

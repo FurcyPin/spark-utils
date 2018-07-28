@@ -3,14 +3,26 @@ package fpin.spark.utils.analysis
 import scala.annotation.tailrec
 
 case class ColumnAggregation(
-  nbDistinct: Long,
-  topN: List[(Long, Value)]
+  count: Long,
+  countDistinct: Long,
+  countNull: Long,
+  topN: List[(Long, Any)],
+  min: Option[Any],
+  max: Option[Any]
 ) {
 
+  import ColumnAggregation._
+
   def merge(that: ColumnAggregation): ColumnAggregation = {
+
+
     ColumnAggregation(
-      nbDistinct = this.nbDistinct + that.nbDistinct,
-      topN = ColumnAggregation.mergeTopN(this.topN, that.topN)
+      count = this.count + that.count,
+      countDistinct = this.countDistinct + that.countDistinct,
+      countNull = this.countNull + that.countNull,
+      topN = ColumnAggregation.mergeTopN(this.topN, that.topN),
+      min = genericMin(this.min, that.min),
+      max = genericMax(this.max, that.max)
     )
   }
 
@@ -19,6 +31,72 @@ case class ColumnAggregation(
 object ColumnAggregation {
 
   private val defaultLimit: Int = 100
+
+  private def genericMin(left: Option[Any], right: Option[Any]): Option[Any] = {
+    (left, right) match {
+      case (Some(a), None) => Some(a)
+      case (None, Some(b)) => Some(b)
+
+      case (Some(a: Byte), Some(b: Byte)) if a <= b => Some(a)
+      case (Some(a: Byte), Some(b: Byte)) => Some(b)
+
+      case (Some(a: Char), Some(b: Char)) if a <= b => Some(a)
+      case (Some(a: Char), Some(b: Char)) => Some(b)
+
+      case (Some(a: String), Some(b: String)) if a <= b => Some(a)
+      case (Some(a: String), Some(b: String)) => Some(b)
+
+      case (Some(a: Short), Some(b: Short)) if a <= b => Some(a)
+      case (Some(a: Short), Some(b: Short)) => Some(b)
+
+      case (Some(a: Int), Some(b: Int)) if a <= b => Some(a)
+      case (Some(a: Int), Some(b: Int)) => Some(b)
+
+      case (Some(a: Long), Some(b: Long)) if a <= b => Some(a)
+      case (Some(a: Long), Some(b: Long)) => Some(b)
+
+      case (Some(a: Float), Some(b: Float)) if a <= b => Some(a)
+      case (Some(a: Float), Some(b: Float)) => Some(b)
+
+      case (Some(a: Double), Some(b: Double)) if a <= b => Some(a)
+      case (Some(a: Double), Some(b: Double)) => Some(b)
+
+      case _ => None
+    }
+  }
+
+  private def genericMax(left: Option[Any], right: Option[Any]): Option[Any] = {
+    (left, right) match {
+      case (Some(a), None) => Some(a)
+      case (None, Some(b)) => Some(b)
+
+      case (Some(a: Byte), Some(b: Byte)) if a >= b => Some(a)
+      case (Some(a: Byte), Some(b: Byte)) => Some(b)
+
+      case (Some(a: Char), Some(b: Char)) if a >= b => Some(a)
+      case (Some(a: Char), Some(b: Char)) => Some(b)
+
+      case (Some(a: String), Some(b: String)) if a >= b => Some(a)
+      case (Some(a: String), Some(b: String)) => Some(b)
+
+      case (Some(a: Short), Some(b: Short)) if a >= b => Some(a)
+      case (Some(a: Short), Some(b: Short)) => Some(b)
+
+      case (Some(a: Int), Some(b: Int)) if a >= b => Some(a)
+      case (Some(a: Int), Some(b: Int)) => Some(b)
+
+      case (Some(a: Long), Some(b: Long)) if a >= b => Some(a)
+      case (Some(a: Long), Some(b: Long)) => Some(b)
+
+      case (Some(a: Float), Some(b: Float)) if a >= b => Some(a)
+      case (Some(a: Float), Some(b: Float)) => Some(b)
+
+      case (Some(a: Double), Some(b: Double)) if a >= b => Some(a)
+      case (Some(a: Double), Some(b: Double)) => Some(b)
+
+      case _ => None
+    }
+  }
 
   private [analysis]
   def mergeTopN(
@@ -51,9 +129,31 @@ object ColumnAggregation {
   }
 
   def apply(value: Value, nbOccurrences: Long): ColumnAggregation = {
+    val comparableValue = value match {
+      case v: Byte => Some(v)
+      case v: Char => Some(v)
+      case v: String => Some(v)
+      case v: Short => Some(v)
+      case v: Int => Some(v)
+      case v: Long => Some(v)
+      case v: Float => Some(v)
+      case v: Double => Some(v)
+      case _ => None
+    }
+
+    val topN =
+      value match {
+//        case _ : Array[Byte] => Nil
+        case _ => (nbOccurrences, value)::Nil
+      }
+
     new ColumnAggregation(
-      topN = (nbOccurrences, value)::Nil ,
-      nbDistinct = 1
+      count = nbOccurrences,
+      countDistinct = 1,
+      countNull = if (value == null) nbOccurrences else 0,
+      topN = topN,
+      min = comparableValue,
+      max = comparableValue
     )
   }
 
