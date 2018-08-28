@@ -1,5 +1,6 @@
 package fpin.spark.utils.analysis
 
+import java.io.{FileOutputStream, PrintStream}
 import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -34,14 +35,14 @@ object HdfsFolderAnalyzer {
     extensions
   }
 
-  def analyzeFolder(string: String)(implicit spark: SparkSession): Unit = {
+  def analyzeFolder(string: String)(implicit spark: SparkSession): String = {
     analyzeFolder(new Path(string))
   }
 
-  def analyzeFolder(path: Path, explode: Boolean = true)(implicit spark: SparkSession): Unit = {
+  def analyzeFolder(path: Path, explode: Boolean = true)(implicit spark: SparkSession): String = {
     import fpin.spark.utils.analysis.implicits._
 
-    val fs: FileSystem = FileSystem.get(spark.sparkContext.hadoopConfiguration)
+    val fs: FileSystem = FileSystem.get(path.toUri, spark.sparkContext.hadoopConfiguration)
     val folders: Seq[(Path, Set[String])] =
       listSubDirectories(path, fs).map{
         f => f -> getFileExtensionsInFolder(f, fs)
@@ -50,7 +51,9 @@ object HdfsFolderAnalyzer {
     val dataFrames: Iterator[(String, DataFrame)] =
       folders.iterator.flatMap {
         case (folder: Path, extensions: Set[String]) if extensions == Set("parquet") =>
-          (folder.toString -> spark.read.parquet(folder.toString).analyze(explode))::Nil
+          (folder.toString -> spark.read.parquet(folder.toString))::Nil
+        case (folder: Path, extensions: Set[String]) if extensions == Set("orc") =>
+          (folder.toString -> spark.read.orc(folder.toString))::Nil
         case (folder: Path, extensions: Set[String]) =>
           println()
           println(folder)
@@ -61,13 +64,25 @@ object HdfsFolderAnalyzer {
     MultiAnalyzer.analyze(dataFrames.toTraversable)
   }
 
+  def appendToFile(content: String, file: String): Unit = {
+    val fos = new FileOutputStream(file, true)
+    val ps = new PrintStream(fos)
+    try {
+      ps.println(content)
+    } finally {
+      ps.close()
+      fos.close()
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     if(args.isEmpty) {
       println("Please specify a folder to scan")
     }
     else {
       val spark = SparkSession.builder().appName("Datalyzer").getOrCreate()
-      HdfsFolderAnalyzer.analyzeFolder(args(0))(spark)
+      val result = HdfsFolderAnalyzer.analyzeFolder(args(0))(spark)
+      appendToFile(result, "report.csv")
     }
   }
 
