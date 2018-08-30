@@ -61,6 +61,12 @@ object ColumnAggregation {
       case (Some(a: Double), Some(b: Double)) if a <= b => Some(a)
       case (Some(a: Double), Some(b: Double)) => Some(b)
 
+      case (Some(a: java.sql.Date), Some(b: java.sql.Date)) if a.compareTo(b) <= 0 => Some(a)
+      case (Some(a: java.sql.Date), Some(b: java.sql.Date)) => Some(b)
+
+      case (Some(a: java.sql.Timestamp), Some(b: java.sql.Timestamp)) if a.compareTo(b) <= 0 => Some(a)
+      case (Some(a: java.sql.Timestamp), Some(b: java.sql.Timestamp)) => Some(b)
+
       case _ => None
     }
   }
@@ -93,6 +99,12 @@ object ColumnAggregation {
 
       case (Some(a: Double), Some(b: Double)) if a >= b => Some(a)
       case (Some(a: Double), Some(b: Double)) => Some(b)
+
+      case (Some(a: java.sql.Date), Some(b: java.sql.Date)) if a.compareTo(b) >= 0 => Some(a)
+      case (Some(a: java.sql.Date), Some(b: java.sql.Date)) => Some(b)
+
+      case (Some(a: java.sql.Timestamp), Some(b: java.sql.Timestamp)) if a.compareTo(b) >= 0 => Some(a)
+      case (Some(a: java.sql.Timestamp), Some(b: java.sql.Timestamp)) => Some(b)
 
       case _ => None
     }
@@ -138,6 +150,8 @@ object ColumnAggregation {
       case v: Long => Some(v)
       case v: Float => Some(v)
       case v: Double => Some(v)
+      case v: java.sql.Timestamp => Some(v)
+      case v: java.sql.Date => Some(v)
       case _ => None
     }
 
