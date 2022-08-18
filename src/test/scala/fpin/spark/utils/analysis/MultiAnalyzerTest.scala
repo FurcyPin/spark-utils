@@ -1,9 +1,7 @@
 package fpin.spark.utils.analysis
 
-import java.util.Properties
-
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.scalatest.FreeSpec
+import org.scalatest.freespec.AnyFreeSpec
 
 object MultiAnalyzerTest {
 
@@ -45,7 +43,7 @@ case class Data(
 )
 
 
-class MultiAnalyzerTest extends FreeSpec {
+class MultiAnalyzerTest extends AnyFreeSpec {
 
   implicit val spark: SparkSession = SparkSession.builder().appName("test").master("local[4]").getOrCreate()
 

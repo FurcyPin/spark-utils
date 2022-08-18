@@ -1,8 +1,8 @@
 package fpin.spark.utils.analysis
 
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.scalatest.FreeSpec
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.scalatest.freespec.AnyFreeSpec
 
 object DataframeExpanderTest {
 
@@ -18,20 +18,20 @@ object DataframeExpanderTest {
 
 }
 
-class DataframeExpanderTest extends FreeSpec {
+class DataframeExpanderTest extends AnyFreeSpec {
 
   import DataframeExpanderTest._
 
-  val sparkConf = new SparkConf().setAppName("test").setMaster("local[2]")
+  val sparkConf: SparkConf = new SparkConf().setAppName("test").setMaster("local[2]")
 
-  val spark = SparkSession.builder.config(sparkConf).getOrCreate()
+  val spark: SparkSession = SparkSession.builder.config(sparkConf).getOrCreate()
 
   import spark.implicits._
 
   "expand should work with null structs" in {
 
-    val b = Struct(None, true, 3l)
-    val c = StructStruct(3l, None, None, 3l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = StructStruct(D = 3L, F = None, G = None, H = 3L)
     val d = Data(Some(c))
 
     val ds = spark.createDataset(Seq(d, d, d))
@@ -76,8 +76,8 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
   "expand should work with arrays of structs" in {
-    val b = Struct(None, true, 3l)
-    val c = Struct(Some(1), false, 2l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = Struct(A = Some(1), B = false, C = 2L)
     val d = ArrayStructData(5, Some(Array(b, c)), 6)
 
     val ds = spark.createDataset(Seq(d, d, d))
@@ -94,8 +94,8 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
   "expandSchema(explode = false) should work with arrays of structs" in {
-    val b = Struct(None, true, 3l)
-    val c = Struct(Some(1), false, 2l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = Struct(A = Some(1), B = false, C = 2L)
     val d = ArrayStructData(5, Some(Array(b, c)), 6)
 
     val ds = spark.createDataset(Seq(d, d, d))
@@ -112,8 +112,8 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
   "expandSchema(explode = true) should work with arrays of structs" in {
-    val b = Struct(None, true, 3l)
-    val c = Struct(Some(1), false, 2l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = Struct(A = Some(1), B = false, C = 2L)
     val d = ArrayStructData(5, Some(Array(b, c)), 6)
 
     val ds = spark.createDataset(Seq(d, d, d))
@@ -130,8 +130,8 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
   "getSchemaSizes should work" in {
-    val b = Struct(None, true, 3l)
-    val c = StructStruct(3l, None, Some(b), 3l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = StructStruct(D = 3L, F = None, G = Some(b), H = 3L)
     val d = Data(Some(c))
 
     val ds = spark.createDataset(Seq(d, d, d))
@@ -158,8 +158,8 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
   "getSchemaSizeWithIndex should work" in {
-    val b = Struct(None, true, 3l)
-    val c = StructStruct(3l, None, Some(b), 3l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = StructStruct(D = 3L, F = None, G = Some(b), H = 3L)
     val d = Data(Some(c))
 
     val ds = spark.createDataset(Seq(d, d, d))
@@ -196,8 +196,8 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
   "getSchemaSizes(ds, explode = true) should work with an array of structs" in {
-    val b = Struct(None, true, 3l)
-    val c = Struct(Some(1), false, 2l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = Struct(A = Some(1), B = false, C = 2L)
     val d = ArrayStructData(5, Some(Array(b, c)), 6)
 
     val ds = spark.createDataset(Seq(d, d, d))
@@ -209,11 +209,14 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
   "getSchemaSizes(ds, explode = false) should work with an array of structs" in {
-    val b = Struct(None, true, 3l)
-    val c = Struct(Some(1), false, 2l)
+    val b = Struct(A = None, B = true, C = 3L)
+    val c = Struct(A = Some(1), B = false, C = 2L)
     val d = ArrayStructData(5, Some(Array(b, c)), 6)
 
     val ds = spark.createDataset(Seq(d, d, d))
+
+    import org.apache.spark.sql.{functions => f}
+    val df: DataFrame = ds.toDF
 
     val actual = DataframeExpander.getSchemaSizes(ds.schema, explode = false)
     val expected = SchemaSize(3,List(SchemaSize(1,List()), SchemaSize(1,List()), SchemaSize(1,List())))
@@ -221,5 +224,4 @@ class DataframeExpanderTest extends FreeSpec {
   }
 
 }
-
 

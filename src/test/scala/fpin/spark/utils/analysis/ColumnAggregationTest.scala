@@ -1,29 +1,29 @@
 package fpin.spark.utils.analysis
 
-import org.scalatest.FreeSpec
+import org.scalatest.freespec.AnyFreeSpec
 
-class ColumnAggregationTest extends FreeSpec {
+class ColumnAggregationTest extends AnyFreeSpec {
 
   "mergeTopN should work" - {
 
     "with two tops" in {
       val actual =
         ColumnAggregation.mergeTopN(
-          leftTop = List(10l -> "a", 5l -> "b", 3l -> "c"),
-          rightTop = List(11l -> "d", 6l -> "e", 2l -> "f")
+          leftTop = List(10L -> "a", 5L -> "b", 3L -> "c"),
+          rightTop = List(11L -> "d", 6L -> "e", 2L -> "f")
         )
-      val expected = List(11l -> "d", 10l -> "a", 6l -> "e", 5l -> "b", 3l -> "c", 2l -> "f")
+      val expected = List(11L -> "d", 10L -> "a", 6L -> "e", 5L -> "b", 3L -> "c", 2L -> "f")
       assert(actual === expected)
     }
 
     "with two when the limit N is reached" in {
       val actual =
         ColumnAggregation.mergeTopN(
-          leftTop = List(10l -> "a", 5l -> "b", 3l -> "c"),
-          rightTop = List(11l -> "d", 6l -> "e", 2l -> "f"),
+          leftTop = List(10L -> "a", 5L -> "b", 3L -> "c"),
+          rightTop = List(11L -> "d", 6L -> "e", 2L -> "f"),
           limit = 5
         )
-      val expected = List(11l -> "d", 10l -> "a", 6l -> "e", 5l -> "b", 3l -> "c")
+      val expected = List(11L -> "d", 10L -> "a", 6L -> "e", 5L -> "b", 3L -> "c")
       assert(actual === expected)
     }
 
@@ -31,19 +31,19 @@ class ColumnAggregationTest extends FreeSpec {
       val actual =
         ColumnAggregation.mergeTopN(
           leftTop = Nil,
-          rightTop = List(11l -> "d", 6l -> "e", 2l -> "f")
+          rightTop = List(11L -> "d", 6L -> "e", 2L -> "f")
         )
-      val expected = List(11l -> "d", 6l -> "e", 2l -> "f")
+      val expected = List(11L -> "d", 6L -> "e", 2L -> "f")
       assert(actual === expected)
     }
 
     "with the right top empty" in {
       val actual =
         ColumnAggregation.mergeTopN(
-          leftTop = List(10l -> "a", 5l -> "b", 3l -> "c"),
+          leftTop = List(10L -> "a", 5L -> "b", 3L -> "c"),
           rightTop = Nil
         )
-      val expected = List(10l -> "a", 5l -> "b", 3l -> "c")
+      val expected = List(10L -> "a", 5L -> "b", 3L -> "c")
       assert(actual === expected)
     }
   }

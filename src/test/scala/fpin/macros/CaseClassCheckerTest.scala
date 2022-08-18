@@ -1,8 +1,8 @@
 package fpin.macros
 
-import org.scalatest.FreeSpec
+import org.scalatest.freespec.AnyFreeSpec
 
-class CaseClassCheckerTest extends FreeSpec {
+class CaseClassCheckerTest extends AnyFreeSpec {
 
   "CaseClassChecker should work" in {
     import CaseClassCheckerTest._

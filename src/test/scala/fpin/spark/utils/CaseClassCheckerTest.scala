@@ -5,14 +5,14 @@ import java.util.UUID
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{Encoder, SparkSession}
-import org.scalatest.FreeSpec
+import org.scalatest.freespec.AnyFreeSpec
 
 import scala.reflect.runtime.universe.TypeTag
 import testing.Utils.withTmpFolder
 
 import scala.util.control.NonFatal
 
-class CaseClassCheckerTest extends FreeSpec  {
+class CaseClassCheckerTest extends AnyFreeSpec  {
 
   import TestCaseClasses._
 
@@ -47,7 +47,7 @@ class CaseClassCheckerTest extends FreeSpec  {
 
   }
 
-  "test run" ignore {
+  "test run" in {
 
     CaseClassChecker.isSubsetOf[Small, Big]
 

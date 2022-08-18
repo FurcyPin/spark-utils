@@ -1,9 +1,9 @@
 package fpin.spark.utils
 
-import org.apache.logging.log4j.{LogManager, Logger}
-import org.scalatest.FreeSpec
+import org.apache.log4j.{LogManager, Logger}
+import org.scalatest.freespec.AnyFreeSpec
 
-class LoggingTest extends FreeSpec {
+class LoggingTest extends AnyFreeSpec {
 
   "test" in {
     Toto.log()

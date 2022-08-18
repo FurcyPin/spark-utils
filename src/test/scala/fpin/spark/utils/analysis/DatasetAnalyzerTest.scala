@@ -1,7 +1,7 @@
 package fpin.spark.utils.analysis
 
 import org.apache.spark.sql.SparkSession
-import org.scalatest.FreeSpec
+import org.scalatest.freespec.AnyFreeSpec
 
 object DatasetAnalyzerTest {
 
@@ -38,7 +38,7 @@ object DatasetAnalyzerTest {
 
 }
 
-class DatasetAnalyzerTest extends FreeSpec {
+class DatasetAnalyzerTest extends AnyFreeSpec {
 
   val spark: SparkSession = SparkSession.builder().appName("test").master("local[4]").getOrCreate()
 
